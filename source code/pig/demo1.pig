@@ -1,0 +1,11 @@
+REGISTER /home/max/Desktop/piggybank-0.17.0.jar;
+rawData = load '/home/max/Desktop/finaldataset/spain/season-1718_csv.csv' USING org.apache.pig.piggybank.storage.CSVExcelStorage(',', 'NO_MULTILINE', 'UNIX', 'SKIP_INPUT_HEADER');
+refineData = FOREACH rawData GENERATE $2 AS homeTeam;
+teamList = DISTINCT refineData;
+rawData2 = load '/home/max/Desktop/finaldataset/spain/season-1819_csv.csv' USING org.apache.pig.piggybank.storage.CSVExcelStorage(',', 'NO_MULTILINE', 'UNIX', 'SKIP_INPUT_HEADER');
+refineData2 = FOREACH rawData2 GENERATE $2 AS awayTeam;
+teamList2 = DISTINCT refineData2;
+fulloutj = JOIN teamList BY homeTeam FULL, teamList2 BY awayTeam;
+refinefulloutj = FOREACH fulloutj GENERATE ($0 is null ? 'upgraded team' : $0) , ($1 is null ? 'downgraded team' : $1);
+re = FILTER refinefulloutj BY $0 == 'upgraded team' OR $1 == 'downgraded team' ;
+dump re;
